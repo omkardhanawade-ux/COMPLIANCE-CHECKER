@@ -29,9 +29,5 @@ Follow these steps to set up the project locally:
 - OpenAI API Key (you can get one from [OpenAI's website](https://beta.openai.com/signup/))
 - Pinecone API Key (you can get one from [Pinecone's website](https://www.pinecone.io/))
 
-### Steps
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/omkardhanawade-ux/COMPLIANCE-CHECKER.git
-   cd COMPLIANCE-CHECKER
+   
