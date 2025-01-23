@@ -1,5 +1,5 @@
 from langchain.vectorstores import FAISS
-from openai.embeddings_utils import get_embedding
+from openai import Embedding
 from dotenv import load_dotenv
 import os
 import logging

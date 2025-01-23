@@ -1,4 +1,4 @@
-from manager.load_manager import load_pdf_manager
+from src.manager.load_manager import load_pdf_manager
 import logging
 
 # setup logging
@@ -19,7 +19,7 @@ def load_pdf_controller(file_path):
               Typically contains the status, message, or extracted data.
     """
     try:
-        logger.info(f"Received request to load PDF from path:{file_path}")
+        logger.info(f"Received request to load PDF from path:{file_papythonth}")
 
         #validate the path
 

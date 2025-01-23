@@ -5,6 +5,7 @@ import logging
 from src.controller.load_controller import load_pdf_controller
 from src.controller.split_controller import split_pdf_controller
 from src.models.embedding_model import generate_embeddings_and_store
+from pydantic import field_validator
 
 
 # Set up logging

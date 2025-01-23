@@ -1,4 +1,4 @@
-from manager.split_manager import split_pdf_manager
+from src.manager.split_manager import split_pdf_manager
 import logging
 
 # Set up logging
