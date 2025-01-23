@@ -2,9 +2,10 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 import shutil
 import os
 import logging
-from controller.load_controller import load_pdf_controller
-from controller.split_controller import split_pdf_controller
-from embedding_model import generate_embeddings_and_store
+from src.controller.load_controller import load_pdf_controller
+from src.controller.split_controller import split_pdf_controller
+from src.models.embedding_model import generate_embeddings_and_store
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
