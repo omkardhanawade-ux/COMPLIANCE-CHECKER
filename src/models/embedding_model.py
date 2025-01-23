@@ -1,49 +1,61 @@
-import os
+from langchain.vectorstores import FAISS
+from openai.embeddings_utils import get_embedding
 from dotenv import load_dotenv
-from langchain_community.embeddings import OpenAIEmbeddings  # Updated import
-from pinecone import Pinecone, ServerlessSpec
+import os
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
-
 load_dotenv()
 
-class EmbeddingModel:
-    def __init__(self):
-        # Ensure environment variables are set
+def generate_embeddings_and_store(chunks = "final_documents" , faiss_index_path="faiss_index"):
+    """
+    Generate embeddings using OpenAI and store them in a FAISS vector store.
+
+    Args:
+        chunks (list): List of document chunks, where each chunk has a "page_content" and "metadata".
+        faiss_index_path (str): Path to save the FAISS index.
+
+    Returns:
+        None
+    """
+    try:
+        # Retrieve OpenAI API key from environment
         openai_api_key = os.getenv("OPENAI_API_KEY")
-        pinecone_api_key = os.getenv("PINECONE_API_KEY")
-        pinecone_environment = os.getenv("PINECONE_ENVIRONMENT")
+        if not openai_api_key:
+            raise ValueError("OpenAI API key not found in environment variables. Please set it in your .env file.")
 
-        if not openai_api_key or not pinecone_api_key or not pinecone_environment:
-            raise ValueError("API keys or environment variables are not set.")
+        import openai
+        openai.api_key = openai_api_key
 
-        # Initialize OpenAI Embeddings
-        self.embedding_model = OpenAIEmbeddings(openai_api_key=openai_api_key)
+        logger.info(f"Starting embedding generation for {len(chunks)} document chunks.")
 
-        # Initialize Pinecone using the correct method
-        self.pc = Pinecone(api_key=pinecone_api_key)
+        # Prepare data for FAISS
+        texts = [chunk["page_content"] for chunk in chunks]
+        metadatas = [chunk["metadata"] for chunk in chunks]
 
-        # Create the index if it doesn't exist
-        if "compliance-checker" not in self.pc.list_indexes().names():
-            self.pc.create_index(
-                name="compliancechecker",
-                dimension=1536,  # The dimension of your embeddings (e.g., for OpenAI embeddings)
-                metric="cosine",  # or "cosine"
-                spec=ServerlessSpec(
-                    cloud="aws",
-                    region="us-east-1-aws"
-                )
-            )
+        # Generate embeddings
+        embeddings = []
+        for text in texts:
+            embedding = get_embedding(text, engine="text-embedding-ada-002")
+            embeddings.append(embedding)
 
-        # Access the index
-        self.index = self.pc.index("compliance-checker")
+        logger.info("Embedding generation complete.")
 
-    def generate_embeddings(self, chunks):
-        # Use embed_documents instead of embed for a list of chunks
-        embeddings = self.embedding_model.embed_documents(chunks)
+        # Create FAISS vector store
+        logger.info("Saving embeddings to FAISS vector store.")
+        vector_store = FAISS.from_texts(texts=texts, embedding=embeddings, metadatas=metadatas)
+        vector_store.save_local(faiss_index_path)
 
-        # Store the embeddings in Pinecone
-        upsert_data = [(str(i), embeddings[i]) for i in range(len(embeddings))]
-        self.index.upsert(vectors=upsert_data)
+        logger.info(f"FAISS vector store successfully saved at {faiss_index_path}.")
 
-        return embeddings
+    except Exception as e:
+        logger.error(f"Error in embedding generation or storage: {e}")
+        raise
+ 
+
+    # Call the embedding and storage function
+    generate_embeddings_and_store(chunks, faiss_index_path="faiss_index")
